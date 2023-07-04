@@ -1,8 +1,9 @@
 import datetime as dt
 from O365 import Account, MSGraphProtocol
 import caldav
-import config as conf
+import config_user as conf
 from icalendar import Calendar
+import json
 
 ## Generic Variables
 START_TIME = conf.START_TIME
@@ -85,11 +86,12 @@ events = calendar.get_events(query=q, include_recurring=True)
 
 # Create a class to hold O365 Event data
 class O365Event:
-    def __init__(self, subject, start, end, description, uid = 1):
+    def __init__(self, subject, start, end, description, location, uid = 1):
         self.subject = subject
         self.start = start
         self.end = end
         self.description = description
+        self.location = location
         self.uid = uid
 
 O365Events = []
@@ -99,7 +101,8 @@ for event in events:
             event.subject, 
             event.start, 
             event.end, 
-            event.body
+            event.body,
+            event.location
         )
     )
 # Count the number of events in the list
@@ -123,11 +126,12 @@ except Exception as e:
 
 # Create a class to hold iCloud Event data
 class CalDavEvent:
-    def __init__(self, subject, start, end, description, uid = 1):
+    def __init__(self, subject, start, end, description, location, uid = 1):
         self.subject = subject
         self.start = start
         self.end = end
         self.description = description
+        self.location = location
         self.uid = uid
 
 CalDavEvents = [] 
@@ -148,6 +152,7 @@ for event in events_fetched:
         description = e.get('description')
         dtStart = e.get('dtstart')
         dtEnd = e.get('dtend')
+        location = e.get('location')
 
         """
         If the event does not exist in O365 with:
@@ -167,7 +172,8 @@ for event in events_fetched:
                 subject=summary,
                 start=dtStart.dt,
                 end=dtEnd.dt, 
-                description=description
+                description=description,
+                location=location
             )
         )
 
@@ -188,11 +194,19 @@ elif compareNumberOfEvents < 0:
             LogToConsole("MISSING - The subject " + e.subject + " DOES NOT exists i iCloud")
             try:
                 LogToConsole("Creating event")
+                
+                try:
+                    locationJson = e.location
+                    locationData = json.loads(locationJson)
+                    location = locationData.displayName
+                except:
+                    location = e.location
 
                 my_event = my_calendar.save_event(
                     dtstart=e.start,
                     dtend=e.end,
-                    summary=e.subject
+                    summary=e.subject,
+                    location=location
                 )
             except Exception as e:
                 raise Exception(e)
