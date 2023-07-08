@@ -11,6 +11,7 @@ CLIENT_ID = "ClientId"
 CLIENT_SECRET = "ClientSecret"
 TENANT_ID = "TenantId"
 DEFAULT_RESOURCE = "default@calendar.com"
+O365_FORCE_AUTHENTICATION = False # Set to True to force user authentication. Only used for initial login or if refresh token is expired.
 
 ## iCloud Variables
 caldav_url = "https://calendar.icloud.com/"
