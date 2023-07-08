@@ -78,11 +78,14 @@ account = Account(credentials, tenant_id=TENANT_ID, protocol=protocol)
 The auth logic is outcommented. Only required for initial authentication on "delegated" permissions.
 We use the refresh token to maintain the connection.
 """
-# scopes = [ 'basic', 'calendar' ]
-# if account.authenticate(scopes=scopes):
-#     LogToConsole('O365 Authenticated')
-# else:
-#     raise Exception("O365 Authentication Error")
+
+if conf.O365_FORCE_AUTHENTICATION:
+    LogToConsole("Force O365 authentication set to true, authenticating...")
+    scopes = [ 'basic', 'calendar' ]
+    if account.authenticate(scopes=scopes):
+        LogToConsole('O365 Authenticated')
+    else:
+        raise Exception("O365 Authentication Error")
 
 schedule = account.schedule()
 calendar = schedule.get_default_calendar()
