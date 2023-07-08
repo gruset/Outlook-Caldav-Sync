@@ -1,9 +1,10 @@
 import datetime as dt
-from O365 import Account, MSGraphProtocol
+from O365 import Account, MSGraphProtocol, Connection
 import caldav
 import config_user as conf
 from icalendar import Calendar
 import json
+import readline
 
 ## Generic Variables
 START_TIME = conf.START_TIME
@@ -70,12 +71,18 @@ LogToConsole("Getting Calendar events from " + str(START_TIME) + " to " + str(EN
 ## O365 stuff
 credentials = (CLIENT_ID, CLIENT_SECRET)
 protocol = MSGraphProtocol(default_resource=conf.DEFAULT_RESOURCE)
-account = Account(credentials, auth_flow_type='credentials', tenant_id=TENANT_ID, protocol=protocol)
+account = Account(credentials, tenant_id=TENANT_ID, protocol=protocol)
 
-if account.authenticate():
-    LogToConsole('O365 Authenticated')
-else:
-    raise Exception("O365 Authentication Error")
+### Authentication logic ###
+"""
+The auth logic is outcommented. Only required for initial authentication on "delegated" permissions.
+We use the refresh token to maintain the connection.
+"""
+# scopes = [ 'basic', 'calendar' ]
+# if account.authenticate(scopes=scopes):
+#     LogToConsole('O365 Authenticated')
+# else:
+#     raise Exception("O365 Authentication Error")
 
 schedule = account.schedule()
 calendar = schedule.get_default_calendar()
@@ -196,11 +203,12 @@ elif compareNumberOfEvents < 0:
                 LogToConsole("Creating event")
                 
                 try:
-                    locationJson = e.location
-                    locationData = json.loads(locationJson)
+                    locationJson = e.location#
+                    locationData = json.load(locationJson)
                     location = locationData.displayName
+                    LogToConsole("Location data: " + location)
                 except:
-                    location = e.location
+                    location = ''#e.location
 
                 my_event = my_calendar.save_event(
                     dtstart=e.start,
