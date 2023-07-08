@@ -130,5 +130,5 @@ dmypy.json
 
 # Custom files for this script
 *_user.py
-o365_token.txt
-sync_log.txt
+o365_token*.txt
+sync_log*.txt
