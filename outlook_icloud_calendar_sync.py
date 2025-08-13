@@ -92,7 +92,7 @@ calendar = schedule.get_default_calendar()
 
 q = calendar.new_query('start').greater_equal(START_TIME)
 q.chain('and').on_attribute('end').less_equal(END_TIME)
-events = calendar.get_events(query=q, include_recurring=True)
+events = calendar.get_events(query=q, include_recurring=True, limit=1000) # Get max 1000 events
 
 # Create a class to hold O365 Event data
 class O365Event:
