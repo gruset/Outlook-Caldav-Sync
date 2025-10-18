@@ -5,6 +5,8 @@ import config_user as conf
 from icalendar import Calendar
 import json
 import readline
+import logging
+from logging.handlers import RotatingFileHandler
 
 ## Generic Variables
 START_TIME = conf.START_TIME
@@ -22,25 +24,34 @@ username = conf.username
 password = conf.password
 CALENDAR_NAME = conf.CALENDAR_NAME
 
+## Logging stuff
+# Set up the logger
+logger = logging.getLogger("SyncLogger")
+logger.setLevel(logging.INFO)
+
+# Formatter with timestamp
+formatter = logging.Formatter('[%(asctime)s] - [%(levelname)s] > %(message)s')
+
+# Console handler
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(formatter)
+
+# File handler with rotation
+file_handler = RotatingFileHandler(
+    'sync.log',        # log file name
+    maxBytes=5*1024*1024,  # 5 MB per file
+    backupCount=3           # keep 3 old log files
+)
+file_handler.setFormatter(formatter)
+
+# Add handlers to logger
+logger.addHandler(console_handler)
+if conf.LogToFile:
+    logger.addHandler(file_handler)
+
 ## Generic Functions
 def LogToConsole(message):
-    logString = "[" + dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "] > " + str(message)
-    
-    if conf.LogToFile:
-        try:
-            f = open("sync_log.txt", "a")
-            f.write(logString + '\n')
-            f.close()
-        except Exception as e:
-            print(e)
-
-    print(logString)
-
-def RotateLogFile(event):
-    if event == "start":
-        return
-    if event == "succes":
-        return
+    logger.info(message)
 
 ### Main logic ###
 """
@@ -60,7 +71,6 @@ If the length of classes are different, the O365 class is traversed in order to 
 
 That's all folks!
 """
-RotateLogFile("start") # First - rotate the log file
 
 LogToConsole("==================")
 LogToConsole("Beginning new sync")
