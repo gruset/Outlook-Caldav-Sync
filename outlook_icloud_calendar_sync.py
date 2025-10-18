@@ -73,13 +73,7 @@ credentials = (CLIENT_ID, CLIENT_SECRET)
 protocol = MSGraphProtocol(default_resource=conf.DEFAULT_RESOURCE)
 account = Account(credentials, tenant_id=TENANT_ID, protocol=protocol)
 
-### Authentication logic ###
-"""
-The auth logic is outcommented. Only required for initial authentication on "delegated" permissions.
-We use the refresh token to maintain the connection.
-"""
-
-if conf.O365_FORCE_AUTHENTICATION:
+if conf.AUTHENTICATE_CONSOLE:
     LogToConsole("Force O365 authentication set to true, authenticating...")
     scopes = [ 'basic', 'calendar' ]
     if account.authenticate(scopes=scopes):
@@ -92,7 +86,7 @@ calendar = schedule.get_default_calendar()
 
 q = calendar.new_query('start').greater_equal(START_TIME)
 q.chain('and').on_attribute('end').less_equal(END_TIME)
-events = calendar.get_events(query=q, include_recurring=True)
+events = calendar.get_events(query=q, include_recurring=True, limit=1000)
 
 # Create a class to hold O365 Event data
 class O365Event:
